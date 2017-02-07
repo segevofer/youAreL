@@ -1,0 +1,102 @@
+html {
+    min-width: 800px;
+}
+
+body {
+    min-height: 400px;
+    padding: 0 1em 3em 1em;
+}
+
+h1.main-header {
+    text-align: center;
+    font-weight: 100 !important;
+}
+
+.container {
+    margin: 5px;
+}
+
+.UrlParamsContainer {
+    margin-bottom: 1em;
+}
+
+.UrlParamsContainer .empty-message {
+    text-align: center;
+    padding: 1em 0;
+    margin: 1em 0;
+    letter-spacing: 1px;
+    font-weight: 100;
+    color: #6b6b6b;
+    font-size: 17px;
+}
+
+.UrlParam {
+    width: 100%;
+    padding: 0 3px 6px 0;
+}
+
+.UrlParam input {
+    height: 36px;
+    padding-left: 12px;
+    padding-right: 12px;
+    cursor: pointer;
+}
+
+.UrlParam input[placeholder="key"] {
+    width: 30%;
+}
+
+.UrlParam input[placeholder="value"] {
+    width: calc(60% - 12px);
+    margin-left: 12px;
+}
+
+.UrlParam i {
+    padding: 0 0 0 12px;
+    font-size: 16px;
+    display: inline-block;
+    opacity: 0.9;
+}
+
+.UrlParam .remove-icon {
+    cursor: pointer;
+    color: #827b7b;
+}
+
+.UrlParam .remove-icon:hover {
+    opacity: 1;
+    color: #000000;
+}
+
+.UrlParam .metaSiteIdWarning {
+    color: #827b7b;
+    padding: 8px 0;
+    letter-spacing: 1px;
+    font-weight: 300;
+    font-size: 15px;
+}
+
+.UrlParam .fa-warning {
+    color: #ea6e6e;
+    padding-right: 6px;
+    padding-left: 6px;
+}
+
+.btnBox {
+    text-align: center;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 1em;
+}
+
+.btnBox .btn {
+    margin: 0 12px 0 0;
+    letter-spacing: 1px;
+    font-weight: 100;
+}
+
+
+.btn.disabled {
+    opacity: 0.5;
+}
