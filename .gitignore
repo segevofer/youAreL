@@ -1,1 +1,4 @@
 /app/node_modules
+build/key.pem
+build/youAreL.pem
+build/youAreL.zip
