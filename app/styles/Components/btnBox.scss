@@ -1,0 +1,13 @@
+.btnBox {
+  text-align: center;
+  padding-top: 1em;
+  .btn {
+    margin: 0 12px 0 0;
+    letter-spacing: 1px;
+    font-weight: 100;
+
+    &.disabled {
+      opacity: 0.5;
+    }
+  }
+}

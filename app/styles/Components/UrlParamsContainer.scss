@@ -1,0 +1,16 @@
+.UrlParamsContainer {
+  max-height: 300px;
+  min-height: 300px;
+  height: 300px;
+  overflow: auto;
+
+  .empty-message {
+    text-align: center;
+    padding: 1em 0;
+    margin: 1em 0;
+    letter-spacing: 1px;
+    font-weight: 100;
+    color: #6b6b6b;
+    font-size: 17px;
+  }
+}
