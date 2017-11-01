@@ -1,0 +1,55 @@
+.ListOfSavedUrls {
+  max-width: 600px;
+  margin: auto;
+
+  .savedUrl {
+    font-size: 18px;
+    line-height: 30px;
+    cursor: pointer;
+    padding: 0.5em 0;
+    position: relative;
+    margin: 6px 0;
+
+    .url-actions {
+      position: absolute;
+      right: 1em;
+
+      i {
+        transition: 0.3s all;
+        padding: 0 3px;
+
+        &:hover {
+          //font-size: 1.2em;
+          color: #65b2ff;
+        }
+      }
+
+    }
+
+    &:hover,
+    &:active,
+    &:focus {
+      background: #f2f2f2;
+
+      .url-name,
+      .url-origin {
+        padding-left: 20px;
+        letter-spacing: 1px;
+      }
+    }
+
+    .url-name {
+      transition: 0.3s all;
+      color: #49647c;
+      width: 80%;
+      display: inline-block;
+    }
+
+    .url-origin {
+      transition: 0.3s all;
+      font-size: 12px;
+      font-style: italic;
+    }
+
+  }
+}

@@ -1,7 +1,10 @@
 import React from 'react';
-import {render} from 'react-dom';
-import {AppContainer} from 'react-hot-loader';
+// import {render} from 'react-dom';
+// import {AppContainer} from 'react-hot-loader';
 import UrlParamsContainer from './Components/UrlParamsContainer'
+import ListOfSavedUrls from './Components/ListOfSavedUrls'
+import SaveUrlPrompt from './Components/SaveUrlPrompt'
+import StorageModel from './Models/StorageModel'
 import _ from 'lodash';
 import $ from 'jquery';
 import Context from './Context'
@@ -16,6 +19,23 @@ const KEYS = {
     L: 76
 };
 
+function buildUrlFromParams(urlParams) {
+    // TODO:
+    // let urlParams = _.reject(this.state.urlParams, this.rejectedParams);
+    // if (!urlParams.length) {
+    //     return;
+    // }
+
+    let newUrl = "?";
+    _.forEach(urlParams, function (obj) {
+        if (obj.key && obj.value) {
+            newUrl += obj.key + "=" + obj.value + "&";
+        }
+    });
+
+    newUrl = newUrl.substr(0, newUrl.length - 1);
+    return newUrl;
+}
 
 function isDebug() {
     return typeof chrome.tabs === 'undefined';
@@ -26,18 +46,30 @@ const context = new Context(DEBUG);
 
 if (DEBUG) {
     console.log('Debug mode');
-    context.setActiveTab({
+    const debugTabs = [{
         url: window.location.href,
         id: 'TEST_123'
-    });
+    }];
+    context.setAllTabs(debugTabs)
+        .setActiveTab(debugTabs[0]);
+
+    setTimeout(() => {
+        context.setLoaded(true);
+    }, 1000);
 } else {
     chrome.tabs.query({active: true, currentWindow: true}, (arrayOfTabs) => {
         const tab = arrayOfTabs[0];
-        context.setAllTabs(arrayOfTabs);
-        context.setActiveTab(tab);
-        context.setLoaded(!!tab);
+        context.setAllTabs(arrayOfTabs)
+            .setActiveTab(tab)
+            .setLoaded(!!tab);
     });
 }
+
+const VIEWS = {
+    PARAMS: 'PARAMS',
+    LOAD: 'LOAD',
+    SAVE: 'SAVE'
+};
 
 export default class App extends React.Component {
 
@@ -45,17 +77,33 @@ export default class App extends React.Component {
         super();
 
         this.state = {
+            // VIEW
+            currentView: VIEWS.PARAMS,
+            urlToRename: {},
+
+            // MODEL
             origin: "",
-            urlParams: []
+            urlParams: [],
+            savedUrls: []
         };
     }
 
     componentDidMount() {
         context.onLoad(() => {
-            this.setState({
-                origin: context.ejectOrigin(context.activeTab.url),
-                urlParams: this.buildUrlParamsObjects(context.activeTab.url)
-            });
+            const origin = context.getUrlOrigin(context.activeTab.url);
+            let urlParams = this.buildUrlParamsObjects(context.activeTab.url);
+
+            const isParamsEmpty = !urlParams.length || (urlParams.length === 1 && !urlParams[0].key && !urlParams[0].value);
+            if (isParamsEmpty) {
+                const foundForOrigin = StorageModel.getUrlParamsForOrigin(origin);
+                if (foundForOrigin) {
+                    urlParams = this.buildUrlParamsObjects(origin + foundForOrigin);
+                }
+            }
+
+            const savedUrls = StorageModel.getSavedUrlParams();
+
+            this.setState({origin, urlParams, savedUrls});
         });
 
         window.addEventListener('keydown', this.handleKeyDown.bind(this), true);
@@ -103,17 +151,7 @@ export default class App extends React.Component {
         if (!this.state.urlParams.length) {
             return '';
         }
-
-        let newUrl = this.state.origin + "?";
-        _.forEach(this.state.urlParams, function (obj) {
-            if (obj.key && obj.value) {
-                newUrl += obj.key + "=" + obj.value + "&";
-            }
-        });
-
-        newUrl = newUrl.substr(0, newUrl.length - 1);
-
-        return newUrl;
+        return this.state.origin + buildUrlFromParams(this.state.urlParams);
     }
 
     renderUrlAndGo() {
@@ -124,42 +162,74 @@ export default class App extends React.Component {
         setTimeout(window.close, 500);
     }
 
-    getOrigin() {
-        return _.clone(this.state.origin);
-    }
-
-    loadFavorite() {
-        if (localStorage.urlParams) {
-            let newLoadedParams = JSON.parse(localStorage.urlParams);
-            if (newLoadedParams) {
-                let paramsToApply = _.clone(this.state.urlParams);
-                _.forEach(newLoadedParams, function (obj) {
-                    let foundByKey = _.find(paramsToApply, {key: obj.key});
-                    if (foundByKey) {
-                        foundByKey.value = obj.value;
-                    } else {
-                        paramsToApply.push(obj);
-                    }
-                });
-
-                this.setState({
-                    urlParams: paramsToApply
-                });
-            }
-        }
-    }
-
     rejectedParams(obj) {
         return obj.key === "metaSiteId";
     }
 
-    saveFavorite() {
-        let urlParams = _.reject(this.state.urlParams, this.rejectedParams);
-        if (!urlParams.length) {
+    selectSavedUrl(favorite) {
+        const urlParams = this.buildUrlParamsObjects(this.state.origin + _.get(favorite, ['location', 'search']));
+        this.setState({
+            urlParams,
+            currentView: VIEWS.PARAMS
+        });
+    }
+
+    removeSavedUrl(url) {
+        StorageModel.removeUrl(url);
+        this.refreshSavedUrls();
+    }
+
+    duplicateSavedUrl(url) {
+        const name = url.name + ' copy';
+        const origin = _.get(url, ['location', 'origin']);
+        const search = _.get(url, ['location', 'search']);
+
+        StorageModel.saveUrl(name, origin, search);
+        this.refreshSavedUrls();
+    }
+
+    renameSavedUrl(url) {
+        this.setState({
+            urlToRename: url,
+            currentView: VIEWS.SAVE
+        });
+    }
+
+    refreshSavedUrls() {
+        this.setState({
+            savedUrls: StorageModel.getSavedUrlParams()
+        })
+    }
+
+    setView(view) {
+        this.setState({currentView: view});
+    }
+
+    toggleView(view) {
+        this.setView(this.state.currentView === view ? VIEWS.PARAMS : view);
+    }
+
+    saveUrl(name) {
+        if (!name) {
             return;
         }
 
-        localStorage.urlParams = JSON.stringify(urlParams);
+        let nextView = VIEWS.PARAMS;
+
+        if (!_.isEmpty(this.state.urlToRename)) {
+            StorageModel.renameUrl(this.state.urlToRename, name);
+            nextView = VIEWS.LOAD;
+        } else {
+            const origin = this.state.origin;
+            const search = buildUrlFromParams(this.state.urlParams);
+            StorageModel.saveUrl(name, origin, search);
+        }
+
+        this.refreshSavedUrls();
+        this.setState({
+            urlToRename: {},
+            currentView: nextView
+        });
     }
 
     focusLastKeyInput() {
@@ -167,6 +237,9 @@ export default class App extends React.Component {
     }
 
     clearParams() {
+        if (this.state.currentView !== VIEWS.PARAMS) {
+            return;
+        }
         this.setState({
             urlParams: [{
                 key: "",
@@ -177,24 +250,24 @@ export default class App extends React.Component {
     }
 
     addUrlParam() {
-        let newUrlParams = _.clone(this.state.urlParams);
+        if (this.state.currentView !== VIEWS.PARAMS) {
+            return;
+        }
+        let urlParams = _.clone(this.state.urlParams);
 
-        newUrlParams.push({
+        urlParams.push({
             key: "",
             value: ""
         });
 
-        this.setState({
-            urlParams: newUrlParams
-        });
-
+        this.setState({urlParams});
         setTimeout(this.focusLastKeyInput, 100);
     }
 
     handleUrlChange(e) {
         const url = e.target.value;
         this.setState({
-            origin: context.ejectOrigin(url),
+            origin: context.getUrlOrigin(url),
             urlParams: this.buildUrlParamsObjects(url)
         });
     }
@@ -212,43 +285,91 @@ export default class App extends React.Component {
             } else if (code === KEYS.N) {
                 this.addUrlParam();
             } else if (code === KEYS.S) {
-                this.saveFavorite();
+                this.toggleView(VIEWS.SAVE);
             } else if (code === KEYS.L) {
-                this.loadFavorite();
+                this.toggleView(VIEWS.LOAD);
             }
         }
     }
 
     render() {
-
         let noParams = !this.state.urlParams.length;
+        let currentView;
+
+        switch (this.state.currentView) {
+            case VIEWS.PARAMS:
+                currentView = (
+                    <UrlParamsContainer
+                        urlParams={this.state.urlParams}
+                        onChange={this.handleChange.bind(this)}
+                        onRemove={this.handleRemove.bind(this)}>
+                    </UrlParamsContainer>
+                );
+                break;
+            case VIEWS.LOAD:
+                currentView = (
+                    <ListOfSavedUrls
+                        savedUrls={this.state.savedUrls}
+                        removeSavedUrl={this.removeSavedUrl.bind(this)}
+                        duplicateSavedUrl={this.duplicateSavedUrl.bind(this)}
+                        renameSavedUrl={this.renameSavedUrl.bind(this)}
+                        selectSavedUrl={this.selectSavedUrl.bind(this)}>
+                    </ListOfSavedUrls>
+                );
+                break;
+            case VIEWS.SAVE:
+                currentView = (
+                    <SaveUrlPrompt
+                        saveUrl={this.saveUrl.bind(this)}>
+                    </SaveUrlPrompt>
+                );
+                break;
+            default:
+                break;
+        }
 
         return (
             <div>
                 <h1 className="main-header">You Are L</h1>
-                <UrlParamsContainer
-                    urlParams={this.state.urlParams}
-                    onChange={this.handleChange.bind(this) }
-                    onRemove={this.handleRemove.bind(this) }/>
+
+                <div className="main-content">
+                    {currentView}
+                </div>
+
                 <div className="btnBox">
                     <div>
                         {/*(Ctrl+L)*/}
-                        <button className="btn btn-primary" onClick={() => this.loadFavorite()}>Load</button>
+                        <button className="btn btn-primary"
+                                onClick={() => this.toggleView(VIEWS.LOAD)}>
+                            Load
+                        </button>
+
                         {/*(Ctrl+S)*/}
-                        <button className={"btn btn-success " + (noParams?"disabled":"")} onClick={(event) => this.saveFavorite()}>Save</button>
+                        <button className={"btn btn-success " + (noParams ? "disabled" : "")}
+                                onClick={() => this.toggleView(VIEWS.SAVE)}>
+                            Save
+                        </button>
+
                         {/*(Ctrl+Backspace)*/}
-                        <button className="btn btn-warning" onClick={() => this.clearParams()}>Clear</button>
+                        <button className="btn btn-warning"
+                                onClick={() => this.clearParams()}>
+                            Clear
+                        </button>
+
                         {/*(Ctrl+N)*/}
-                        <button className="btn btn-success" onClick={() => this.addUrlParam()}>Add</button>
+                        <button className="btn btn-success"
+                                onClick={() => this.addUrlParam()}>
+                            Add
+                        </button>
+
                         {/*(Ctrl+Enter)*/}
-                        <button className={"btn btn-info " + (noParams?"disabled":"")} onClick={(event) => this.renderUrlAndGo()}>Apply</button>
-                    </div>
-                    <div>
-                        <input value={this.buildCurrentUrl()}
-                               className="main-url"
-                               onChange={(event) => this.handleUrlChange(event)}/>
+                        <button className={"btn btn-info " + (noParams ? "disabled" : "")}
+                                onClick={(event) => this.renderUrlAndGo()}>
+                            Apply
+                        </button>
                     </div>
                 </div>
+
             </div>
         )
     }

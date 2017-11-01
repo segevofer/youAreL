@@ -31,8 +31,8 @@ export default class UrlParamsContainer extends React.Component {
         let isEmpty = this.isEmpty();
         return (
             <div className="UrlParamsContainer">
-                { isEmpty && this.buildEmptyMessage() }
-                { _.map(this.props.urlParams, this.buildUrlParamHtml.bind(this)) }
+                {isEmpty && this.buildEmptyMessage()}
+                {_.map(this.props.urlParams, this.buildUrlParamHtml.bind(this))}
             </div>
         )
     }

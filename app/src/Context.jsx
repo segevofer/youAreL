@@ -19,19 +19,20 @@ export default class Context {
 
     setAllTabs(allTabs) {
         this.allTabs = allTabs;
+        return this;
     }
 
     setActiveTab(activeTab) {
         this.activeTab = activeTab;
+        return this;
     }
 
     setLoaded(loaded) {
         this.loaded = loaded;
         if (loaded) {
-            _.forEach(this.onLoadCallbacks, (foo)=> {
-                foo();
-            });
+            _.forEach(this.onLoadCallbacks, foo => foo());
         }
+        return this;
     }
 
     updateUrl(url) {
@@ -40,9 +41,10 @@ export default class Context {
         } else {
             chrome.tabs.update(this.activeTab.id, {url: url});
         }
+        return this;
     }
 
-    ejectOrigin(url) {
+    getUrlOrigin(url) {
         if (this.isLoaded() && _.isString(url) && url.indexOf("?") != -1) {
             let pathArray = url.split("?");
             return pathArray[0];
@@ -51,8 +53,8 @@ export default class Context {
         }
     }
 
-    ejectSearch(url) {
-        let org = this.ejectOrigin(url);
+    getUrlSearch(url) {
+        let org = this.getUrlOrigin(url);
         return url.substr(org.length + 1)
     }
 
@@ -60,7 +62,7 @@ export default class Context {
         if (!windowLocation) return "";
         var queryString = {};
 
-        var query = this.ejectSearch(windowLocation);
+        var query = this.getUrlSearch(windowLocation);
         var vars = query.split("&");
         for (var i = 0; i < vars.length; i++) {
             var pair = vars[i].split("=");
