@@ -69,10 +69,14 @@ export default class App extends React.Component {
         };
     }
 
-    buildUrlFromParams() {
-        const urlParams = _.reject(this.state.urlParams, urlParam => {
-            return _.includes(this.state.originData.rejected, urlParam.key);
-        });
+    buildUrlFromParams(filterRejectedKeys) {
+        let urlParams = this.state.urlParams;
+
+        if (filterRejectedKeys) {
+            urlParams = _.reject(urlParams, urlParam => {
+                return _.includes(this.state.originData.rejected, urlParam.key);
+            });
+        }
 
         if (!urlParams.length) {
             return '';
@@ -166,7 +170,7 @@ export default class App extends React.Component {
         if (!this.state.urlParams.length) {
             return '';
         }
-        return this.state.origin + this.buildUrlFromParams();
+        return this.state.origin + this.buildUrlFromParams(false);
     }
 
     renderUrlAndGo() {
@@ -232,7 +236,7 @@ export default class App extends React.Component {
             nextView = VIEWS.LOAD;
         } else {
             const origin = this.state.origin;
-            const search = this.buildUrlFromParams();
+            const search = this.buildUrlFromParams(true);
             StorageModel.saveUrl(name, origin, search);
         }
 
