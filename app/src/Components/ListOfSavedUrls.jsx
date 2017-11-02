@@ -104,6 +104,11 @@ export default class ListOfSavedUrls extends React.Component {
             emptyMessage = (
                 <div className="empty-message">
                     You didn't save any url yet...
+                    <br/>
+                    <br/>
+                    <a className="btn-link" onClick={() => this.props.backToParamsView()}>
+                        Start here
+                    </a>
                 </div>
             );
         }

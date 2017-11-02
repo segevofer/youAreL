@@ -15,7 +15,7 @@
 }
 
 .UrlParam input[placeholder="value"] {
-  width: calc(60% - 12px);
+  width: calc(50% - 12px);
   margin-left: 12px;
 }
 
@@ -36,18 +36,29 @@
   color: #000000;
 }
 
-.UrlParam .metaSiteIdWarning {
+.UrlParam .rejectedKeyWarning {
   color: #827b7b;
-  padding: 8px 0;
-  letter-spacing: 1px;
+  padding: 8px;
   font-weight: 300;
   font-size: 15px;
 }
 
+.UrlParam .rejectedKeyWarning .rejectedKeyWarning-text {
+  padding-left: 36px;
+  letter-spacing: 1px;
+}
+
 .UrlParam .fa-warning {
   color: #ea6e6e;
-  padding-right: 6px;
-  padding-left: 6px;
+  padding: 0 4px;
+}
+
+.UrlParam .urlParamsActions {
+  margin-right: 12px;
+}
+
+.UrlParam .urlParamsActions i {
+  cursor: pointer;
 }
 
 .ListOfSavedUrls {
@@ -160,6 +171,10 @@ h1.main-header {
   font-weight: 100;
   color: #6b6b6b;
   font-size: 17px;
+}
+
+.empty-message .btn-link {
+  cursor: pointer;
 }
 @charset "UTF-8";
 /*!

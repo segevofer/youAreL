@@ -4,10 +4,13 @@ const modelName = '_youAreL';
 
 const emptyModel = {
     urls: [],
-    rejectedKeys: [
-        "metaSiteId"
-    ],
+    origins: {},
     version: 1
+};
+
+const emptyOriginData = {
+    favorites: [],
+    rejected: ['metaSiteId']
 };
 
 function urlModel(name, origin, search) {
@@ -28,6 +31,21 @@ const StorageModel = {
 
     saveModel(model) {
         return localStorage[modelName] = JSON.stringify(model);
+    },
+
+    getEmptyOriginData() {
+        return _.clone(emptyOriginData);
+    },
+
+    getOriginData(origin) {
+        const model = this.loadModel();
+        return model.origins[origin] || this.getEmptyOriginData();
+    },
+
+    setOriginData(origin, originData) {
+        const model = this.loadModel();
+        model.origins[origin] = originData;
+        this.saveModel(model);
     },
 
     saveUrl(name, origin, search) {

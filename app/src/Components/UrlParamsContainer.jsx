@@ -9,6 +9,9 @@ export default class UrlParamsContainer extends React.Component {
             <UrlParam urlParam={urlParam}
                       key={index}
                       index={index}
+                      originData={this.props.originData}
+                      setFavorite={this.props.setFavorite}
+                      setRejected={this.props.setRejected}
                       onChange={this.props.onChange}
                       onRemove={this.props.onRemove}/>
         )

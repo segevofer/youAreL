@@ -16,7 +16,7 @@ $color_warning: #ea6e6e;
     width: 30%;
   }
   input[placeholder="value"] {
-    width: calc(60% - 12px);
+    width: calc(50% - 12px);
     margin-left: 12px;
   }
   i {
@@ -33,16 +33,27 @@ $color_warning: #ea6e6e;
       color: $black;
     }
   }
-  .metaSiteIdWarning {
+  .rejectedKeyWarning {
     color: $color_grey;
-    padding: 8px 0;
-    letter-spacing: 1px;
+    padding: 8px;
     font-weight: 300;
     font-size: 15px;
+
+    .rejectedKeyWarning-text {
+      padding-left: 36px;
+      letter-spacing: 1px;
+    }
   }
   .fa-warning {
     color: $color_warning;
-    padding-right: 6px;
-    padding-left: 6px;
+    padding: 0 4px;
+  }
+
+  .urlParamsActions {
+    margin-right: 12px;
+
+    i {
+      cursor: pointer;
+    }
   }
 }

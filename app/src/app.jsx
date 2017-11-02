@@ -1,6 +1,4 @@
 import React from 'react';
-// import {render} from 'react-dom';
-// import {AppContainer} from 'react-hot-loader';
 import UrlParamsContainer from './Components/UrlParamsContainer'
 import ListOfSavedUrls from './Components/ListOfSavedUrls'
 import SaveUrlPrompt from './Components/SaveUrlPrompt'
@@ -18,24 +16,6 @@ const KEYS = {
     S: 83,
     L: 76
 };
-
-function buildUrlFromParams(urlParams) {
-    // TODO:
-    // let urlParams = _.reject(this.state.urlParams, this.rejectedParams);
-    // if (!urlParams.length) {
-    //     return;
-    // }
-
-    let newUrl = "?";
-    _.forEach(urlParams, function (obj) {
-        if (obj.key && obj.value) {
-            newUrl += obj.key + "=" + obj.value + "&";
-        }
-    });
-
-    newUrl = newUrl.substr(0, newUrl.length - 1);
-    return newUrl;
-}
 
 function isDebug() {
     return typeof chrome.tabs === 'undefined';
@@ -83,9 +63,30 @@ export default class App extends React.Component {
 
             // MODEL
             origin: "",
+            originData: StorageModel.getEmptyOriginData(),
             urlParams: [],
             savedUrls: []
         };
+    }
+
+    buildUrlFromParams() {
+        const urlParams = _.reject(this.state.urlParams, urlParam => {
+            return _.includes(this.state.originData.rejected, urlParam.key);
+        });
+
+        if (!urlParams.length) {
+            return '';
+        }
+
+        let newUrl = "?";
+        _.forEach(urlParams, function (obj) {
+            if (obj.key && obj.value) {
+                newUrl += obj.key + "=" + obj.value + "&";
+            }
+        });
+
+        newUrl = newUrl.substr(0, newUrl.length - 1);
+        return newUrl;
     }
 
     componentDidMount() {
@@ -102,8 +103,8 @@ export default class App extends React.Component {
             }
 
             const savedUrls = StorageModel.getSavedUrlParams();
-
-            this.setState({origin, urlParams, savedUrls});
+            const originData = StorageModel.getOriginData(origin);
+            this.setState({origin, urlParams, savedUrls, originData});
         });
 
         window.addEventListener('keydown', this.handleKeyDown.bind(this), true);
@@ -116,6 +117,15 @@ export default class App extends React.Component {
                 key,
                 value
             };
+        });
+
+        _.forEach(_.get(this.state.originData, 'favorites'), function (key) {
+            if (!_.find(result, {key})) {
+                result.push({
+                    key,
+                    value: ""
+                });
+            }
         });
 
         // placeholder if empty
@@ -151,7 +161,7 @@ export default class App extends React.Component {
         if (!this.state.urlParams.length) {
             return '';
         }
-        return this.state.origin + buildUrlFromParams(this.state.urlParams);
+        return this.state.origin + this.buildUrlFromParams();
     }
 
     renderUrlAndGo() {
@@ -160,10 +170,6 @@ export default class App extends React.Component {
         }
         context.updateUrl(this.buildCurrentUrl());
         setTimeout(window.close, 500);
-    }
-
-    rejectedParams(obj) {
-        return obj.key === "metaSiteId";
     }
 
     selectSavedUrl(favorite) {
@@ -221,7 +227,7 @@ export default class App extends React.Component {
             nextView = VIEWS.LOAD;
         } else {
             const origin = this.state.origin;
-            const search = buildUrlFromParams(this.state.urlParams);
+            const search = this.buildUrlFromParams();
             StorageModel.saveUrl(name, origin, search);
         }
 
@@ -292,6 +298,32 @@ export default class App extends React.Component {
         }
     }
 
+    setOriginDataKey(namespace, key, shouldBeAddedToArray) {
+        const originData = _.clone(this.state.originData);
+
+        if (shouldBeAddedToArray) {
+            if (!_.includes(originData[namespace], key)) {
+                originData[namespace].push(key);
+            }
+        } else {
+            let index = _.indexOf(originData[namespace], key);
+            if (index !== -1) {
+                originData[namespace].splice(index, 1);
+            }
+        }
+
+        StorageModel.setOriginData(this.state.origin, originData);
+        this.setState({originData});
+    }
+
+    setFavorite(key, isFavorite) {
+        this.setOriginDataKey('favorites', key, isFavorite);
+    }
+
+    setRejected(key, isRejected) {
+        this.setOriginDataKey('rejected', key, isRejected);
+    }
+
     render() {
         let noParams = !this.state.urlParams.length;
         let currentView;
@@ -301,6 +333,9 @@ export default class App extends React.Component {
                 currentView = (
                     <UrlParamsContainer
                         urlParams={this.state.urlParams}
+                        originData={this.state.originData}
+                        setFavorite={this.setFavorite.bind(this)}
+                        setRejected={this.setRejected.bind(this)}
                         onChange={this.handleChange.bind(this)}
                         onRemove={this.handleRemove.bind(this)}>
                     </UrlParamsContainer>
@@ -312,6 +347,7 @@ export default class App extends React.Component {
                         savedUrls={this.state.savedUrls}
                         removeSavedUrl={this.removeSavedUrl.bind(this)}
                         duplicateSavedUrl={this.duplicateSavedUrl.bind(this)}
+                        backToParamsView={this.setView.bind(this, VIEWS.PARAMS)}
                         renameSavedUrl={this.renameSavedUrl.bind(this)}
                         selectSavedUrl={this.selectSavedUrl.bind(this)}>
                     </ListOfSavedUrls>
