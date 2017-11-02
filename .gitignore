@@ -3,6 +3,7 @@ app/public/
 app/node_modules/
 license-key/
 release/
+build/
 build/key.pem
 build/youAreL.pem
 build/youAreL.zip
