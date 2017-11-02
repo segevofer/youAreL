@@ -182,7 +182,19 @@ export default class App extends React.Component {
     }
 
     selectSavedUrl(favorite) {
-        const urlParams = this.buildUrlParamsObjects(this.state.origin + _.get(favorite, ['location', 'search']));
+        const urlParams = _.clone(this.state.urlParams);
+        const newUrlParams = this.buildUrlParamsObjects(this.state.origin + _.get(favorite, ['location', 'search']));
+
+        _.forEach(newUrlParams, function (newUrlParam) {
+            const found = _.find(urlParams, {key: newUrlParam.key});
+
+            if (found) {
+                found.value = newUrlParam.value;
+            } else {
+                urlParams.push(newUrlParam);
+            }
+        });
+
         this.setState({
             urlParams,
             currentView: VIEWS.PARAMS
