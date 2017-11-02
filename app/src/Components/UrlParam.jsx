@@ -10,7 +10,7 @@ export default class UrlParam extends React.Component {
             <div className="rejectedKeyWarning">
                 {/*<i className="fa fa-warning warning-icon"></i>*/}
                 <span className="rejectedKeyWarning-text">
-                    This key will not be saved
+                    "{this.props.urlParam.key}" will not be saved
                 </span>
             </div>
         );

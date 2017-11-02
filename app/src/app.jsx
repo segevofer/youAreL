@@ -90,8 +90,8 @@ export default class App extends React.Component {
     }
 
     componentDidMount() {
-        context.onLoad(() => {
-            const origin = context.getUrlOrigin(context.activeTab.url);
+
+        const loadUrlParamsObject = () => {
             let urlParams = this.buildUrlParamsObjects(context.activeTab.url);
 
             const isParamsEmpty = !urlParams.length || (urlParams.length === 1 && !urlParams[0].key && !urlParams[0].value);
@@ -102,9 +102,14 @@ export default class App extends React.Component {
                 }
             }
 
+            this.setState({urlParams});
+        };
+
+        context.onLoad(() => {
+            const origin = context.getUrlOrigin(context.activeTab.url);
             const savedUrls = StorageModel.getSavedUrlParams();
             const originData = StorageModel.getOriginData(origin);
-            this.setState({origin, urlParams, savedUrls, originData});
+            this.setState({origin, savedUrls, originData}, loadUrlParamsObject);
         });
 
         window.addEventListener('keydown', this.handleKeyDown.bind(this), true);
@@ -268,14 +273,6 @@ export default class App extends React.Component {
 
         this.setState({urlParams});
         setTimeout(this.focusLastKeyInput, 100);
-    }
-
-    handleUrlChange(e) {
-        const url = e.target.value;
-        this.setState({
-            origin: context.getUrlOrigin(url),
-            urlParams: this.buildUrlParamsObjects(url)
-        });
     }
 
     handleKeyDown(event) {
