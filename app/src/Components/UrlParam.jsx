@@ -2,13 +2,9 @@ import React from 'react';
 import _ from 'lodash';
 
 export default class UrlParam extends React.Component {
-
-// <i className="fa fa-star-o"/>
-
     getWarning() {
         return (
             <div className="rejectedKeyWarning">
-                {/*<i className="fa fa-warning warning-icon"></i>*/}
                 <span className="rejectedKeyWarning-text">
                     "{this.props.urlParam.key}" will not be saved
                 </span>
@@ -16,48 +12,46 @@ export default class UrlParam extends React.Component {
         );
     }
 
-    setNotFavoriteAndNotRejected() {
-        this.props.setFavorite(this.props.urlParam.key, false);
-        this.props.setRejected(this.props.urlParam.key, false);
-    }
-
     setFavorite() {
-        this.props.setRejected(this.props.urlParam.key, false);
         this.props.setFavorite(this.props.urlParam.key, true);
     }
 
     setRejected() {
         this.props.setRejected(this.props.urlParam.key, true);
-        this.props.setFavorite(this.props.urlParam.key, false);
     }
 
     render() {
-        const key = this.props.urlParam.key;
-        const value = this.props.urlParam.value;
+        const {key, value} = this.props.urlParam;
 
-        let iconToShow;
         const isRejected = _.includes(this.props.originData.rejected, key);
         const isFavorite = _.includes(this.props.originData.favorites, key);
 
-        if (isRejected) {
-            iconToShow = (
-                <i className="fa fa-eye-slash" onClick={(event) => this.setNotFavoriteAndNotRejected()}/>
-            );
-        } else if (isFavorite) {
-            iconToShow = (
-                <i className="fa fa-star" onClick={(event) => this.setRejected()}/>
-            );
-        } else {
-            iconToShow = (
-                <i className="fa fa-star-o" onClick={(event) => this.setFavorite()}/>
-            );
-        }
+        const starIcon = isFavorite ? (
+					<i className="fa fa-star" title="remove from favorites" onClick={(event) => this.props.setFavorite(key, false)}/>
+				) : (
+					<i className="fa fa-star-o" title="Add to favorites" onClick={(event) => this.props.setFavorite(key, true)}/>
+				);
+
+        const rejectedIcon = isRejected ? (
+					<i className="fa fa-eye-slash" onClick={(event) => this.props.setRejected(key, false)}/>
+				) : (
+					<i className="fa fa-eye" onClick={(event) => this.props.setRejected(key, true)}/>
+				);
+
+        const copyToClipboard = () => {
+						if (this.inputRef && _.isFunction(this.inputRef.select)) {
+							this.inputRef.select();
+							document.execCommand('copy');
+							window.setTimeout(() => this.inputRef.blur(), 200);
+						}
+        };
 
         return (
             <div className="UrlParam">
 
                 <span className="urlParamsActions">
-                    {iconToShow}
+										{starIcon}
+										{rejectedIcon}
                 </span>
 
                 <input value={key}
@@ -66,9 +60,14 @@ export default class UrlParam extends React.Component {
                        placeholder="key"/>
 
                 <input value={value}
+											 ref={(ref) => this.inputRef = ref}
                        onChange={(event) => this.props.onChange(event, this.props.index, 'value')}
                        title={value}
                        placeholder="value"/>
+
+                <i className="fa fa-copy"
+                   title="copy to clipboard"
+                   onClick={(event) => copyToClipboard()}></i>
 
                 <i className="fa fa-times remove-icon"
                    title="remove"

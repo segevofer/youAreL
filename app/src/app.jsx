@@ -69,7 +69,7 @@ export default class App extends React.Component {
         };
     }
 
-    buildUrlFromParams(filterRejectedKeys) {
+    buildUrlFromParams(filterRejectedKeys = false) {
         let urlParams = this.state.urlParams;
 
         if (filterRejectedKeys) {
@@ -170,7 +170,7 @@ export default class App extends React.Component {
         if (!this.state.urlParams.length) {
             return '';
         }
-        return this.state.origin + this.buildUrlFromParams(false);
+        return this.state.origin + this.buildUrlFromParams();
     }
 
     renderUrlAndGo() {
@@ -377,9 +377,17 @@ export default class App extends React.Component {
                 break;
         }
 
+        const copyUrlSearchToClipboard = () => {
+            if (this.hiddenUrlSearchRef && _.isFunction(this.hiddenUrlSearchRef.select)) {
+							this.hiddenUrlSearchRef.select();
+							document.execCommand('copy');
+							this.hiddenUrlSearchRef.blur();
+            }
+        };
+
         return (
             <div>
-                <h1 className="main-header">You Are L</h1>
+                <h1 className="main-header" onClick={(event) => this.setView(VIEWS.PARAMS)}>You Are L</h1>
 
                 <div className="main-content">
                     {currentView}
@@ -388,36 +396,42 @@ export default class App extends React.Component {
                 <div className="btnBox">
                     <div>
                         {/*(Ctrl+L)*/}
-                        <button className="btn btn-primary"
+                        <button className="btn btn-default"
                                 onClick={() => this.toggleView(VIEWS.LOAD)}>
-                            Load
+													<i className="fa fa-upload"></i> Load
                         </button>
 
-                        {/*(Ctrl+S)*/}
-                        <button className={"btn btn-success " + (noParams ? "disabled" : "")}
-                                onClick={() => this.toggleView(VIEWS.SAVE)}>
-                            Save
+												{/*(Ctrl+S)*/}
+												<button className={"btn btn-default " + (noParams ? "disabled" : "")}
+																onClick={() => this.toggleView(VIEWS.SAVE)}>
+													<i className="fa fa-save"></i> Save
                         </button>
 
                         {/*(Ctrl+Backspace)*/}
-                        <button className="btn btn-warning"
+                        <button className="btn btn-default"
                                 onClick={() => this.clearParams()}>
-                            Clear
+													<i className="fa fa-trash-o"></i> Clear
                         </button>
 
                         {/*(Ctrl+N)*/}
-                        <button className="btn btn-success"
+                        <button className="btn btn-default"
                                 onClick={() => this.addUrlParam()}>
-                            Add
+													<i className="fa fa-plus"></i> Add
                         </button>
 
                         {/*(Ctrl+Enter)*/}
                         <button className={"btn btn-info " + (noParams ? "disabled" : "")}
                                 onClick={(event) => this.renderUrlAndGo()}>
-                            Apply
+													<i className="fa fa-paper-plane-o"></i> Apply
                         </button>
                     </div>
                 </div>
+								<div className="btnBox">
+									<button className="btn btn-sm" title="copy all url params to clipboard" onClick={event => copyUrlSearchToClipboard()}>
+										<i className="fa fa-copy"></i> Copy everything
+									</button>
+								</div>
+							<input value={this.buildUrlFromParams()} className="hidden-url-search" ref={(ref) => this.hiddenUrlSearchRef = ref}/>
 
             </div>
         )

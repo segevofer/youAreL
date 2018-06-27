@@ -6,28 +6,39 @@ $color_warning: #ea6e6e;
 .UrlParam {
   width: 100%;
   padding: 0 3px 6px 0;
+
   input {
     height: 36px;
     padding-left: 12px;
     padding-right: 12px;
     cursor: pointer;
   }
+
   input[placeholder="key"] {
     width: 30%;
   }
+
   input[placeholder="value"] {
     width: calc(50% - 12px);
     margin-left: 12px;
   }
-  i {
-    padding: 0 0 0 12px;
+
+  i.fa {
+    cursor: pointer;
+    padding: 0 6px;
     font-size: 16px;
     display: inline-block;
     opacity: 0.9;
+
+    &:hover {
+        transform: scale(1.2);
+        transition: transform 0.3s;
+    }
   }
+
   .remove-icon {
-    cursor: pointer;
     color: $color_grey;
+
     &:hover {
       opacity: 1;
       color: $black;
@@ -40,20 +51,21 @@ $color_warning: #ea6e6e;
     font-size: 15px;
 
     .rejectedKeyWarning-text {
-      padding-left: 36px;
+      padding-left: 60px;
       letter-spacing: 1px;
     }
   }
+
   .fa-warning {
     color: $color_warning;
     padding: 0 4px;
   }
 
+  //.fa-star {
+  //  color: #a9a909;
+  //}
+
   .urlParamsActions {
     margin-right: 12px;
-
-    i {
-      cursor: pointer;
-    }
   }
 }

@@ -24,10 +24,15 @@ function urlModel(name, origin, search) {
 }
 
 const StorageModel = {
-    loadModel() {
-        const existingModel = JSON.parse(localStorage[modelName] || '{}');
-        return _.defaultsDeep(existingModel, emptyModel);
-    },
+	loadModel() {
+		const existingModel = JSON.parse(localStorage[modelName] || '{}');
+		const shouldOverrideModel = _.get(existingModel, 'version') < emptyModel.version;
+		if (shouldOverrideModel) {
+			return _.defaultsDeep(emptyModel);
+		}
+
+		return _.defaultsDeep(existingModel, emptyModel);
+	},
 
     saveModel(model) {
         return localStorage[modelName] = JSON.stringify(model);

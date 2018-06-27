@@ -28,8 +28,13 @@ h1.main-header {
   min-height: 300px;
   height: 300px;
   overflow: auto;
-  padding: 0 2em;
+  padding: 6px 24px;
   margin: auto;
+}
+
+.hidden-url-search {
+  position: absolute;
+  left: -9999px;
 }
 
 .empty-message {
